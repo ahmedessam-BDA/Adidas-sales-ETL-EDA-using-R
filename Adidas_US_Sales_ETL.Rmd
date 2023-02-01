@@ -1,0 +1,133 @@
+---
+title: "Adidas_US_Sales_ETL"
+author: "Ahmed Essam"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+#### Loading libraries
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+#### Loading the data and explore its structure
+```{r}
+ADS <- read.csv('Adidas_US_Sales_Datasets.csv', stringsAsFactors = F)
+str(ADS)
+```
+
+#### Exploring the first 10 columns of the data
+```{r}
+head(ADS, 10)
+```
+
+#### Exploring the last 10 columns of the data
+```{r}
+tail(ADS, 10)
+```
+
+#### Exploring 50 random observations of the data
+```{r}
+slice_sample(ADS, n=50)
+```
+
+## Data transformation
+```{r}
+ADS$Invoice.Date <- mdy(ADS$Invoice.Date)
+```
+
+```{r}
+ADS$Retailer <- as.factor(ADS$Retailer)
+ADS$Retailer.ID <- as.factor(ADS$Retailer.ID)
+ADS$Region <- as.factor(ADS$Region)
+ADS$State <- as.factor(ADS$State)
+ADS$City <- as.factor(ADS$City)
+ADS$Product <- as.factor(ADS$Product)
+ADS$Sales.Method <- as.factor(ADS$Sales.Method)
+```
+
+```{r}
+ADS$Price.per.Unit <- gsub('[^[:alnum:]]','',(ADS$Price.per.Unit))
+ADS$Price.per.Unit <- as.numeric(ADS$Price.per.Unit)
+ADS$Price.per.Unit <- as.numeric(format(round(ADS$Price.per.Unit*0.01, 2), nsmall=2))
+```
+
+```{r}
+ADS$Units.Sold <- gsub('[^[:alnum:]]','',(ADS$Units.Sold))
+ADS$Units.Sold <- as.integer(ADS$Units.Sold)
+ADS$Total.Sales <- gsub('[^[:alnum:]]','',(ADS$Total.Sales))
+ADS$Total.Sales <- as.integer(ADS$Total.Sales)
+ADS$Operating.Profit <- gsub('[^[:alnum:]]','',(ADS$Operating.Profit))
+ADS$Operating.Profit <- as.integer(ADS$Operating.Profit)
+ADS$Operating.Margin <- gsub('[^[:alnum:]]','',(ADS$Operating.Margin))
+ADS$Operating.Margin <- as.numeric(ADS$Operating.Margin)*0.01
+```
+
+```{r}
+ADS <- ADS %>%
+rename(RetailerID = Retailer.ID, InvoiceDate = Invoice.Date, UnitPrice = Price.per.Unit, Quantity = Units.Sold, Revenue = Total.Sales, OP = Operating.Profit, OPM = Operating.Margin, Method = Sales.Method)
+```
+
+```{r}
+ADS$Year <- as.factor(year(ADS$InvoiceDate))
+ADS$Month <- month(ADS$InvoiceDate, label = T)
+```
+
+#### Exploring the summary descriptive statistics of the dataset after tranfomation process
+```{r}
+summary(ADS)
+```
+
+### Finding outliers, subsetting and cleaning the dataset
+```{r}
+ADS %>%  arrange(desc(Revenue)) %>% head(n=50)
+```
+
+```{r}
+ADS_HR <- ADS %>% filter(Revenue>=400000) %>% filter(Revenue<=710000)
+summary(ADS_HR)
+```
+
+```{r}
+ggplot(ADS_HR, aes(Revenue))+geom_boxplot()
+```
+
+```{r}
+ADS_MR <- ADS %>% filter(Revenue<400000) %>% filter(Revenue>=10000)
+summary(ADS_MR)
+```
+
+```{r}
+ggplot(ADS_MR, aes(Revenue))+geom_boxplot()
+```
+
+```{r}
+ADS_LR <- ADS %>% filter(Revenue<10000) %>% filter(Revenue !=0)
+summary(ADS_LR)
+```
+
+```{r}
+ggplot(ADS_LR, aes(Revenue))+geom_boxplot()
+```
+
+#### Saving the ETL version of data subsets
+```{r}
+write_rds(ADS, 'Adidas_US_Sales_Datasets_ETL.rds', compress = 'gz')
+write_rds(ADS_HR, 'Adidas_US_Sales_High_Revenue_ETL.rds', compress = 'gz')
+write_rds(ADS_MR, 'Adidas_US_Sales_Midium_Revenue_ETL.rds', compress = 'gz')
+write_rds(ADS_LR, 'Adidas_US_Sales_Low_Revenue_ETL.rds', compress = 'gz')
+```
+
+```{r}
+write_csv(ADS, 'Adidas_US_Sales_Datasets_ETL.csv')
+write_csv(ADS_HR, 'Adidas_US_Sales_High_Revenue_ETL.csv')
+write_csv(ADS_MR, 'Adidas_US_Sales_Midium_Revenue_ETL.csv')
+write_csv(ADS_LR, 'Adidas_US_Sales_Low_Revenue_ETL.csv')
+```
+
+
+
+

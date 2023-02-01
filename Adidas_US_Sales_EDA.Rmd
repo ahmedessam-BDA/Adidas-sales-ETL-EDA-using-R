@@ -1,0 +1,87 @@
+---
+title: "Adidas_US_Sales_EDA"
+author: "Ahmed Essam"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+#### Loading libraries
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+#### Loading data
+```{r}
+ADS_HR <- read_rds('Adidas_US_Sales_High_Revenue_ETL.rds')
+ADS_MR <- read_rds('Adidas_US_Sales_Midium_Revenue_ETL.rds')
+ADS_LR <- read_rds('Adidas_US_Sales_Low_Revenue_ETL.rds')
+```
+
+#### Exploring the summary of descriptive statistics
+```{r}
+summary(ADS_HR)
+summary(ADS_MR)
+summary(ADS_LR)
+```
+
+### Exploring data through visualization
+
+```{r}
+ggplot(ADS_HR, aes(Revenue))+geom_histogram(aes(fill=Method))
+ggplot(ADS_MR, aes(Revenue))+geom_histogram(aes(fill=Method))
+ggplot(ADS_LR, aes(Revenue))+geom_histogram(aes(fill=Method))
+```
+
+```{r}
+ggplot(ADS_HR, aes(x=Revenue, y=OP))+geom_point()
+ggplot(ADS_MR, aes(x=Revenue, y=OP))+geom_point()
+ggplot(ADS_LR, aes(x=Revenue, y=OP))+geom_point()
+```
+
+```{r}
+ggplot(ADS_HR, aes(x=Revenue, y=Year))+geom_col(aes(fill=Month))
+ggplot(ADS_MR, aes(x=Revenue, y=Year))+geom_col(aes(fill=Month))
+ggplot(ADS_LR, aes(x=Revenue, y=Year))+geom_col(aes(fill=Month))
+```
+
+```{r}
+ggplot(ADS_HR, aes(x=Revenue, y=Year))+geom_boxplot(aes(fill=Month))
+ggplot(ADS_MR, aes(x=Revenue, y=Year))+geom_boxplot(aes(fill=Month))
+ggplot(ADS_LR, aes(x=Revenue, y=Year))+geom_boxplot(aes(fill=Month))
+```
+
+```{r}
+year_month_H <- ADS_HR %>% group_by(Year, Month) %>% summarize(sum_revenue=sum(Revenue))
+print(year_month_H)
+year_month_M <- ADS_MR %>% group_by(Year, Month) %>% summarize(sum_revenue=sum(Revenue))
+print(year_month_M)
+year_month_L <- ADS_LR %>% group_by(Year, Month) %>% summarize(sum_revenue=sum(Revenue))
+print(year_month_L)
+```
+
+```{r}
+ggplot(ADS_HR, aes(x=Month, y=Revenue))+geom_col(aes(fill=Year))
+ggplot(ADS_MR, aes(x=Month, y=Revenue))+geom_col(aes(fill=Year))
+ggplot(ADS_LR, aes(x=Month, y=Revenue))+geom_col(aes(fill=Year))
+```
+
+```{r}
+ggplot(ADS_HR, aes(x=OPM, y=fct_infreq(Product)))+geom_col(aes(fill=Retailer))
+ggplot(ADS_MR, aes(x=OPM, y=fct_infreq(Product)))+geom_col(aes(fill=Retailer))
+ggplot(ADS_LR, aes(x=OPM, y=fct_infreq(Product)))+geom_col(aes(fill=Retailer))
+```
+
+```{r}
+ggplot(ADS_HR, aes(OP,fct_infreq(Region)))+geom_col(aes(fill=Product))
+ggplot(ADS_MR, aes(OP,fct_infreq(Region)))+geom_col(aes(fill=Product))
+ggplot(ADS_LR, aes(OP,fct_infreq(Region)))+geom_col(aes(fill=Product))
+```
+
+
+
+
+
+
